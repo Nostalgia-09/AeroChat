@@ -293,7 +293,6 @@ function parseMessage(
 	tokens.push(msg.slice(lastIndex));
 
 	message.attachments.forEach((a) => {
-		console.log(a);
 		let shouldBreak = false;
 		if (tokens.filter((t) => t).length > 0) shouldBreak = true;
 
