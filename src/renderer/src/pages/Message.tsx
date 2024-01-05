@@ -293,8 +293,13 @@ function parseMessage(
 	tokens.push(msg.slice(lastIndex));
 
 	message.attachments.forEach((a) => {
+		console.log(a);
 		let shouldBreak = false;
 		if (tokens.filter((t) => t).length > 0) shouldBreak = true;
+
+		
+		// i hope this doesn't cause 50 errors!!!!!!
+		let content_type = a?.content_type!.split("/");
 		tokens.unshift(
 			<a
 				href="#"
@@ -306,10 +311,43 @@ function parseMessage(
 				}}
 				target="_blank"
 			>
-				View attachment
+				View attachment ({a?.filename})
 			</a>,
 			shouldBreak ? <br /> : null,
 		);
+		switch (content_type[0]) {
+			case "image":
+				tokens.unshift(
+					<a
+						href="#"
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							if (!a?.url.startsWith("https://")) return;
+							remote.require("electron").shell.openExternal(a.url);
+						}}
+						target="_blank"
+					>
+						<img style={{ height: "100%", display: "block" }} src={a.proxy_url}></img>
+					</a>,
+					shouldBreak ? <br /> : null,
+				);
+				break;
+			case "video":
+				tokens.unshift(
+					<video style={{ height: "100%", display: "block"}} src={a.proxy_url} controls></video>,
+					shouldBreak ? <br /> : null,
+				)
+				break;
+			case "audio":
+				tokens.unshift(
+					<audio src={a.proxy_url} controls></audio>,
+					// force break it since bug
+					<br />,
+				)
+			default:
+				break;
+		}
 	});
 	return tokens;
 }
